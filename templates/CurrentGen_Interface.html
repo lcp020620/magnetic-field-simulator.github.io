@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Magnetic Field Simulator Version 0.1.0</title>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <style>
+        .box { border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+        .hidden { display: none; }
+        .btn-add { background-color: #28a745; color: white; padding: 10px; cursor: pointer; }
+        .btn-run { background-color: #007bff; color: white; padding: 10px; cursor: pointer; }
+    </style>
+    <style>
+        .element-item { 
+            background: #f8f9fa; border: 1px solid #ddd; padding: 8px; 
+            margin-top: 5px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .btn-delete { 
+            color: white; background: #dc3545; border: none; 
+            border-radius: 3px; cursor: pointer; padding: 2px 8px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Step 0. Define your meshgrid</h2>
+    <div class="box">
+        <label>Mesh dense : </label>
+        <input type="number" id="meshDense" step="1" value="30" min="1">
+        <label>Mesh width : </label>
+        <input type="number" id="meshWidth" step="1" value="10" min="1">
+        <label>Mesh length : </label>
+        <input type="number" id="meshLength" step="1" value="10" min="1">
+        <label>Mesh height : </label>
+        <input type="number" id="meshHeight" step="1" value="10" min="1">
+    </div>
+
+    <h2>Step 1. Append your Electric Current</h2>
+    <div class="box">
+        <label>Type: </label>
+        <select id="shape" onchange="toggleFields()">
+            <option value="straight">Straight line</option>
+            <option value="circle">Circle</option>
+        </select>
+        
+        <br><br>
+        <label>Current Intensity(Amphere): </label>
+        <input type="number" id="intensity" step="0.1" value="1.0">
+
+        <label>Vector dense: </label>
+        <input type="number" id="dense" value="20">
+
+        <div id="vector_fields" style="margin-top:15px;">
+            <div id="v1_label"><strong>Location of center(x, y, z): </strong></div>
+            <input type="number" id="v1x" value="0"> <input type="number" id="v1y" value="0"> <input type="number" id="v1z" value="0">
+            
+            <div id="v2_label" style="margin-top:10px;"><strong>Normal Vector(x, y, z): </strong></div>
+            <input type="number" id="v2x" value="0"> <input type="number" id="v2y" value="0"> <input type="number" id="v2z" value="0">
+            
+            <div id="radius_field" class="hidden" style="margin-top:10px;">
+                <strong>Radius: </strong><br>
+                <input type="number" id="radius" step="0.1" value="1.0">
+            </div>
+        </div>
+        <br>
+        <button class="btn-add" onclick="addCurrent()">Request</button>
+    </div>
+
+    <div class="box">
+        <h4>Request list. Press button 'X' to cancel each.</h4>
+        <div id="currentList">
+            <!-- this is where request list visualizes -->
+        </div>
+    </div>
+    <div class="box">
+        <button class="btn-run" onclick="defineMeshgrid();location.href='/newplot'">Start Simulation</button>
+    </div>
+
+    <script>
+        const socket = io();
+
+        function toggleFields() {
+            const shape = document.getElementById('shape').value;
+            const rField = document.getElementById('radius_field');
+            const l1 = document.getElementById('v1_label');
+            const l2 = document.getElementById('v2_label');
+
+            if (shape === 'circle') {
+                rField.classList.remove('hidden');
+                l1.innerHTML = "<strong>center coordinate(x, y, z): </strong>";
+                l2.innerHTML = "<strong>normal vector(x, y, z): </strong>";
+            } else {
+                rField.classList.add('hidden');
+                l1.innerHTML = "<strong>start point(x, y, z): </strong>";
+                l2.innerHTML = "<strong>end point(x, y, z): </strong>";
+            }
+        }
+
+        socket.on('error', (res) => alert('Error: ' + res.msg));
+            let localElements = [];
+
+            function defineMeshgrid(){
+                const meshDense = document.getElementById('meshDense').value;
+                const meshWidth = document.getElementById('meshWidth').value;
+                const meshLength = document.getElementById('meshLength').value;
+                const meshHeight = document.getElementById('meshHeight').value;
+                const meshInfo = {meshDense, meshWidth, meshLength, meshHeight};
+                socket.emit('define_meshgrid', meshInfo);
+            }
+
+            function addCurrent() {
+                const shape = document.getElementById('shape').value;
+                const intensity = document.getElementById('intensity').value;
+                const dense = document.getElementById('dense').value;
+                const v1 = [document.getElementById('v1x').value, document.getElementById('v1y').value, document.getElementById('v1z').value];
+                const v2 = [document.getElementById('v2x').value, document.getElementById('v2y').value, document.getElementById('v2z').value];
+                const radius = document.getElementById('radius').value;
+
+                const data = { shape, intensity, dense, v1, v2, radius };
+                socket.emit('add_element', data);
+                
+                localElements.push(data);
+                renderList();
+            }
+
+            // view list
+            function renderList() {
+                const listDiv = document.getElementById('currentList');
+                listDiv.innerHTML = '';
+
+                localElements.forEach((el, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'element-item';
+                    const info = `[${el.shape}] Intensity:${el.intensity} | Dense: ${el.dense} | P1:(${el.v1}) | P2:(${el.v2}) ${el.shape==='circle' ? '| R:'+el.radius : ''}`;
+                    
+                    div.innerHTML = `
+                        <span>${info}</span>
+                        <button class="btn-delete" onclick="removeElement(${index})">x</button>
+                    `;
+                    listDiv.appendChild(div);
+                });
+                document.getElementById('count').innerText = localElements.length;
+            }
+            function removeElement(index) {
+                socket.emit('remove_element', { index: index });
+                localElements.splice(index, 1);
+                renderList();
+            }
+            socket.on('add_success', (res) => {
+                console.log("Request success!");
+            });
+    </script>
+</body>
+</html>

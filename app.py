@@ -1,35 +1,44 @@
 from flask import Flask, render_template, redirect, url_for
 from flask_socketio import SocketIO, emit
+from flask_currentgenerator import CurrentGen
+import cupy as cp
+import numpy as np
+import pandas as pd
+from magneticfieldsimulator import MagneticFieldSimulator
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-# 전류 정보를 저장할 리스트 (메모리 내 저장)
 current_elements = []
-
-class CurrentGen:
-    def __init__(self, shape, intensity, details):
-        self.shape = shape
-        self.intensity = float(intensity)
-        self.details = details  # 직선: [v1, v2], 원: [v1, v2, radius]
-
-    def __repr__(self):
-        return f"<CurrentGen {self.shape} | 세기: {self.intensity} | 정보: {self.details}>"
+meshDense = 30
+width = 10
+length = 10
+height = 10
 
 @app.route('/')
 def index():
-    return render_template('test.html')
+    return render_template('CurrentGen_Interface.html')
 
-@app.route('/newplot')
-def newplot():
-    # 저장된 모든 전류 정보를 시뮬레이션 페이지로 넘김
-    return render_template('newplot.html', data=current_elements)
+@socketio.on('define_meshgrid')
+def defineMeshgrid(data):
+    global meshDense
+    global width
+    global length
+    global height
+    try:
+        meshDense = int(data['meshDense'])
+        width = int(data['meshWidth'])
+        length = int(data['meshLength'])
+        height = int(data['meshHeight'])
+    except Exception as e:
+        emit('error', {'msg': str(e)})
 
 @socketio.on('add_element')
 def handle_add_element(data):
     try:
         shape = data['shape']
         intensity = data['intensity']
+        dense = data['dense']
         
         # 상세 정보 파싱
         v1 = tuple(map(float, data['v1']))
@@ -43,16 +52,48 @@ def handle_add_element(data):
         else:
             details = []
 
-        # 클래스 생성 및 리스트 추가
-        new_element = CurrentGen(shape, intensity, details)
+        new_element = CurrentGen(shape, dense, intensity, details)
         current_elements.append(new_element)
-        
-        print(f"현재 총 {len(current_elements)}개 요소 저장됨: {new_element}")
+        print(f"Total {len(current_elements)} requests standby: {new_element}")
         
         # 클라이언트에 반영 완료 알림
         emit('add_success', {'count': len(current_elements)})
     except Exception as e:
         emit('error', {'msg': str(e)})
+
+@socketio.on('remove_element')
+def handle_remove_element(data):
+    try:
+        index = int(data['index'])
+        if 0 <= index < len(current_elements):
+            removed = current_elements.pop(index)
+            print(f"Request Canceled: {removed}")
+            emit('update_list', {'count': len(current_elements)})
+    except Exception as e:
+        emit('error', {'msg': str(e)})
+
+#==========Simulation Start==========
+@app.route('/newplot')
+def newplot():
+    dLArray = cp.zeros((0, 7), dtype=cp.float32)
+    #==========make current vector array==========
+    for _ in current_elements:
+        _.getCurrent()
+        dLArray = cp.append(dLArray, _.getCurrent(), axis=0)
+    
+    #==========simulate magnetic field==========
+    simulator = MagneticFieldSimulator()
+    r = simulator.makeMesh(dense=meshDense, width=width, length=length, height=height)
+    MF = simulator.makeMF(dLArray=dLArray)
+
+    plotMF = cp.asnumpy(MF)
+    plotr = cp.asnumpy(r)
+    csvArray = np.concatenate([plotr[:, 0:3], plotMF[:, 0:3]], axis=1)
+    # pdcsvArray = pd.DataFrame(csvArray, columns=['x', 'y', 'z', 'bx', 'by', 'bz'])
+    # pdcsvArray.to_csv("C:/[git]MagneticFieldSimulator/MFArray.csv", index=False)
+    csvArray.transpose()
+    data_to_send = csvArray.tolist()
+    return render_template('newplot.html', data=data_to_send)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
