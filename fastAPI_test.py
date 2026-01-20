@@ -1,5 +1,6 @@
 from typing import Union
 from fastapi import FastAPI
+from pydantic import BaseModel
 import uvicorn
 
 app = FastAPI()
@@ -28,3 +29,7 @@ async def update_item(item_id: int, item: Item):
 @app.delete("/items/{item_id}")
 def delete_item(item_id: int):
     return {"deleted": item_id}
+
+# when you cannot use command 'python -m uvicorn fastAPI_test:app --reload', use code below.
+# if __name__ == "__main__":
+#     uvicorn.run('fastAPI_test:app', reload=True)
