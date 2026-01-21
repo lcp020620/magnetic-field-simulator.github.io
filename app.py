@@ -3,7 +3,6 @@ from flask_socketio import SocketIO, emit
 from flask_currentgenerator import CurrentGen
 import cupy as cp
 import numpy as np
-import pandas as pd
 from magneticfieldsimulator import MagneticFieldSimulator
 from scipy.integrate import solve_ivp
 
