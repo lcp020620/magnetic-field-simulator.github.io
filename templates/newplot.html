@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>자기장 시각화 - InstancedMesh</title>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #050505; color: white; font-family: sans-serif; }
         #ui { position: absolute; top: 20px; left: 20px; z-index: 10; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 8px; }
@@ -19,6 +20,17 @@
             font-weight: bold;
         }
         #downloadBtn:hover { background: #218838; }
+        #previousBtn { 
+            margin-top: 15px; 
+            padding: 8px 12px; 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold;
+        }
+        #previousBtn:hover { background: #218838; }
     </style>
 </head>
 <body>
@@ -26,6 +38,7 @@
 <div id="ui">
     <h3>Magnetic Field Visualization</h3>
     <button id="downloadBtn">Download this data as .csv file</button>
+    <button id="previousBtn">Go back to simulation settings</button>
 </div>
 
 
@@ -176,6 +189,18 @@
         controls.update();
         renderer.render(scene, camera);
     }
+
+    //go back to settings
+    document.getElementById('previousBtn').addEventListener('click', function() {
+        fetch('/resetData', { method: 'POST' })
+        .then(() => {
+            window.location.href = "/";
+        })
+        .catch(err => {
+            console.error("데이터 초기화 실패:", err);
+        });
+    });
+
 </script>
 </body>
 </html>

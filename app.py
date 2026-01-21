@@ -15,6 +15,8 @@ meshDense = 30
 width = 10
 length = 10
 height = 10
+MF = None
+r = None
 
 @app.route('/')
 def index():
@@ -76,6 +78,8 @@ def handle_remove_element(data):
 #==========Simulation Start==========
 @app.route('/newplot')
 def newplot():
+    global MF
+    global r
     dLArray = cp.zeros((0, 7), dtype=cp.float32)
     #==========make current vector array==========
     for _ in current_elements:
@@ -90,11 +94,20 @@ def newplot():
     plotMF = cp.asnumpy(MF)
     plotr = cp.asnumpy(r)
     csvArray = np.concatenate([plotr[:, 0:3], plotMF[:, 0:3]], axis=1)
-    # pdcsvArray = pd.DataFrame(csvArray, columns=['x', 'y', 'z', 'bx', 'by', 'bz'])
-    # pdcsvArray.to_csv("C:/[git]MagneticFieldSimulator/MFArray.csv", index=False)
     csvArray.transpose()
     data_to_send = csvArray.tolist()
     return render_template('newplot.html', data=data_to_send)
+
+@app.route('/resetData', methods=['POST'])
+def resetData():
+    global MF
+    global r
+    global current_elements
+    MF = None
+    r = None
+    current_elements = []
+    print("reset!!!")
+    return '', 204
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
