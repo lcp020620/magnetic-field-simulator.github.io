@@ -5,6 +5,7 @@ import cupy as cp
 import numpy as np
 import pandas as pd
 from magneticfieldsimulator import MagneticFieldSimulator
+from scipy.integrate import solve_ivp
 
 app = Flask(__name__)
 socketio = SocketIO(app)
