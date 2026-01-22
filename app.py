@@ -5,7 +5,6 @@ import cupy as cp
 import numpy as np
 from magneticfieldsimulator import MagneticFieldSimulator
 from threading import Timer
-import webbrowser
 import os
 import signal
 
