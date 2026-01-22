@@ -4,6 +4,10 @@ from flask_currentgenerator import CurrentGen
 import cupy as cp
 import numpy as np
 from magneticfieldsimulator import MagneticFieldSimulator
+from threading import Timer
+import webbrowser
+import os
+import signal
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -104,5 +108,17 @@ def resetData():
     current_elements = []
     return '', 204
 
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    print("shutdown recieved")
+    os.kill(os.getpid(), signal.SIGINT)
+    return 'Server shutting down...'
+
+def open_browser():
+    # webbrowser.open_new("http://127.0.0.1:5000")
+    url = 'http://127.0.0.1:5000'
+    os.system(f'start chrome --app={url}')
+
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    Timer(1, open_browser).start()
+    socketio.run(app, port=5000)

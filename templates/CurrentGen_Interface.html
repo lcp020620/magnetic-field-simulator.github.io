@@ -51,10 +51,10 @@
         <input type="number" id="dense" value="20">
 
         <div id="vector_fields" style="margin-top:15px;">
-            <div id="v1_label"><strong>Location of center(x, y, z): </strong></div>
+            <div id="v1_label"><strong>Start point(x, y, z): </strong></div>
             <input type="number" id="v1x" value="0"> <input type="number" id="v1y" value="0"> <input type="number" id="v1z" value="0">
             
-            <div id="v2_label" style="margin-top:10px;"><strong>Normal Vector(x, y, z): </strong></div>
+            <div id="v2_label" style="margin-top:10px;"><strong>End point(x, y, z): </strong></div>
             <input type="number" id="v2x" value="0"> <input type="number" id="v2y" value="0"> <input type="number" id="v2z" value="0">
             
             <div id="radius_field" class="hidden" style="margin-top:10px;">
@@ -74,6 +74,7 @@
     </div>
     <div class="box">
         <button class="btn-run" onclick="defineMeshgrid();location.href='/vectorplot'">Start Simulation</button>
+        <button onclick="terminateServer(), window.close()">Simulation turn off</button>
     </div>
 
     <script>
@@ -149,6 +150,15 @@
             socket.on('add_success', (res) => {
                 console.log("Request success!");
             });
+            function terminateServer() {
+                if (confirm("Turn off simulation?")) {
+                    fetch('/shutdown', { method: 'POST' })
+                    .then(() => {
+                        window.close();
+                    });
+                }
+            }
+            
     </script>
 </body>
 </html>

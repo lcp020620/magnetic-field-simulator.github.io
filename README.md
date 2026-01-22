@@ -23,3 +23,4 @@ The following are the issues I currently have unresolved:
 1. Instead of visualizing the magnetic field vectors at each point, visualize the magnetic field lines by connecting them with lines.
 2. How to package this into a single .exe file (pyinstaller and pywebviewer, which I tried, failed to recognize the CUDA DLL file and resulted in errors.)
 3. How to reduce vector overlap by specifying the region that Three.js visualizes.
+4. Make this into an online server so that children and students can access the site and use it even on low-spec hardware.(Server provides GPU computation)

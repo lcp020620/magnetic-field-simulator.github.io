@@ -39,10 +39,9 @@
     <h3>Magnetic Field Visualization</h3>
     <button id="downloadBtn">Download this data as .csv file</button>
     <button id="previousBtn">Go back to simulation settings</button>
+    <button onclick="if (confirm('Turn off simulation?')) {fetch('/shutdown', { method: 'POST' }).then(() => {window.close();});}">Simulation turn off</button>
 </div>
 
-
-<!-- Three.js 및 관련 라이브러리 로드 -->
 <script type="importmap">
     {
         "imports": {
@@ -56,20 +55,19 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    // Flask에서 전달된 데이터를 JS 배열로 변환 (Jinja2 safe 필터 사용)
     const rawData = {{ data|tojson|safe }};
+    const socket = io();
 
     let scene, camera, renderer, controls, instancedMesh;
     const MAX_INSTANCES = 150000;
 
     init();
     animate();
-    
-    // 데이터가 존재할 경우 즉시 렌더링 실행
+
     if (rawData && rawData.length > 0) {
         renderMagneticField(rawData);
     } else {
-        document.getElementById('status').innerText = "표시할 데이터가 없습니다.";
+        document.getElementById('status').innerText = "No data to plot.";
     }
 
     function init() {
@@ -94,7 +92,6 @@
         document.getElementById('downloadBtn').addEventListener('click', downloadCSV);
     }
 
-    // CSV 파일 생성 및 다운로드 함수
     function downloadCSV() {
         if (!rawData || rawData.length === 0) {
             alert("Error occured : No data.");
@@ -127,8 +124,7 @@
         }
 
         const count = Math.min(data.length, MAX_INSTANCES);
-        
-        // 원뿔(Cone) 형태로 변경하여 화살표 방향성을 더 명확히 함
+
         const geometry = new THREE.ConeGeometry(0.15, 1, 4); 
         const material = new THREE.MeshPhongMaterial({ color: 0xffffff });
 
@@ -144,7 +140,6 @@
             dummy.position.set(x, y, z);
 
             const direction = new THREE.Vector3(bx, by, bz).normalize();
-            // ConeGeometry의 기본 정점 방향은 Y축(+)입니다.
             const arrowDir = new THREE.Vector3(0, 1, 0); 
             dummy.quaternion.setFromUnitVectors(arrowDir, direction);
 
@@ -165,7 +160,6 @@
         if (instancedMesh.instanceColor) instancedMesh.instanceColor.needsUpdate = true;
 
         scene.add(instancedMesh);
-        // document.getElementById('status').innerText = `${count.toLocaleString()} 개의 데이터 시각화 완료`;
     }
 
     function onWindowResize() {
