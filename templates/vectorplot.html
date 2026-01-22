@@ -39,7 +39,7 @@
     <h3>Magnetic Field Visualization</h3>
     <button id="downloadBtn">Download this data as .csv file</button>
     <button id="previousBtn">Go back to simulation settings</button>
-    <button onclick="location.herf='goodbye.html';if (confirm('Turn off simulation?')) {fetch('/shutdown', { method: 'POST' });location.herf='goodbye.html';}">Simulation turn off</button>
+    <button onclick="if (confirm('Turn off simulation?')) {fetch('/shutdown', { method: 'POST' })}">Simulation turn off</button>
 </div>
 
 <script type="importmap">

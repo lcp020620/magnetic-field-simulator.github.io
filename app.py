@@ -7,6 +7,7 @@ from magneticfieldsimulator import MagneticFieldSimulator
 from threading import Timer
 import os
 import signal
+# import subprocess
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -110,11 +111,19 @@ def resetData():
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
     print("shutdown recieved")
-    os.kill(os.getpid(), signal.SIGINT)
-    return render_template('goodbye.html')
+    def chromewindowkill():
+        os.kill(os.getpid(), signal.SIGINT)
+    # title_keyword = "Magnetic Field Visualization - InstancedMesh"
+    # cmd = f'Get-Process chrome | Where-Object {{$_.MainWindowTitle -like "*{title_keyword}*"}} | Stop-Process'
+    # try:
+    #     subprocess.run(["powershell", "-Command", cmd], check=True)
+    #     print(f"성공: [{title_keyword}] 관련 창을 닫았습니다.")
+    # except subprocess.CalledProcessError:
+    #     print(f"오류: 해당 제목의 창을 찾을 수 없거나 종료하지 못했습니다.")
+    Timer(1, chromewindowkill).start()
+    return render_template("goodbye.html")
 
 def open_browser():
-    # webbrowser.open_new("http://127.0.0.1:5000")
     url = 'http://127.0.0.1:5000'
     os.system(f'start chrome --app={url}')
 
