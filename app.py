@@ -32,9 +32,9 @@ def defineMeshgrid(data):
     global height
     try:
         meshDense = int(data['meshDense'])
-        width = int(data['meshWidth'])
-        length = int(data['meshLength'])
-        height = int(data['meshHeight'])
+        width = float(data['meshWidth'])
+        length = float(data['meshLength'])
+        height = float(data['meshHeight'])
     except Exception as e:
         emit('error', {'msg': str(e)})
 
