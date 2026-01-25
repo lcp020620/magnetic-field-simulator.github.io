@@ -1,7 +1,6 @@
 #====imports for Magnetic Field calculation====
 import cupy as cp
 import numpy as np
-import matplotlib.pyplot as plt
 from currentgenerator import CurrentGen
 from magneticfieldsimulator import MagneticFieldSimulator
 from vectorgenerator import VectorGenerator
@@ -17,8 +16,8 @@ from flask import Flask
 simulator = MagneticFieldSimulator()
 meshDense = 30
 width = 10
-length = 10
-height = 10
+length = 20
+height = 30
 r = simulator.makeMesh(dense=meshDense, width=width, length=length, height=height)
 activateROI = False
 current = CurrentGen()  #make current polygon
@@ -46,7 +45,6 @@ ROIIdx = simulator.isROI(space=r, ROI=ROI, range=2)
 
 
 #data preprocessing for fastAPI
-grim = plt.figure().add_subplot(projection='3d')
 if  activateROI:
     plotMF = cp.asnumpy(MF[ROIIdx, :])
     plotr = cp.asnumpy(r[ROIIdx, :])
