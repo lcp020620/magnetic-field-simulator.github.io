@@ -39,7 +39,7 @@
     import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
     let scene, camera, renderer, controls, instancedMesh;
-    const MAX_INSTANCES = 150000; // 최대 인스턴스 수
+    //const MAX_INSTANCES = 150000; // 최대 인스턴스 수
 
     // 축 가이드용 변수
     let sceneAxis, cameraAxis, rendererAxis;
@@ -145,7 +145,8 @@
             instancedMesh.material.dispose();
         }
 
-        const count = Math.min(data.length, MAX_INSTANCES);
+        //const count = Math.min(data.length, MAX_INSTANCES);
+        const count = data.length;
         const arrowGeom = new THREE.BufferGeometry();
 
         // 1. 원기둥 (화살표 몸통)
