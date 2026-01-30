@@ -68,7 +68,7 @@
     const socket = io();
 
     let scene, camera, renderer, controls, instancedMesh, labelRenderer;
-    const MAX_INSTANCES = 150000;
+    //const MAX_INSTANCES = 150000;
 
     let axesScene, axesCamera; 
     const AXES_SIZE = 160; // 축 표시창 크기(px)
@@ -187,7 +187,8 @@
             instancedMesh.material.dispose();
         }
 
-        const count = Math.min(data.length, MAX_INSTANCES);
+        //const count = Math.min(data.length, MAX_INSTANCES);
+        const count = data.length;
         const arrowGeom = new THREE.BufferGeometry();
 
         // 1. 원기둥 (화살표 몸통)
