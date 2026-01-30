@@ -28,6 +28,8 @@
 ## **프로젝트 소개 및 튜토리얼 Youtube 영상**
 시뮬레이터의 작동 모습과 사용법을 영상으로 확인해 보세요!
 
+이미지를 누르면 Youtube 영상을 볼 수 있습니다.
+
 | 🎥 컴퓨터로 직접 실행하는 방법 | 💻 Google Colab에서 실행하는 방법 |
 | :---: | :---: |
 | [![Intro](https://img.youtube.com/vi/XghdGBYB3hE/0.jpg)](https://youtu.be/XghdGBYB3hE) | [![Colab](https://img.youtube.com/vi/CR1B1KkAaRE/0.jpg)](https://youtu.be/CR1B1KkAaRE) |
